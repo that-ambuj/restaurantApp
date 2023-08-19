@@ -1,36 +1,23 @@
 import {
   QueryClient,
   QueryClientProvider,
-  useInfiniteQuery,
   useQuery,
 } from "@tanstack/react-query";
-import React, { useContext } from "react";
+import React from "react";
 import {
   Text,
   View,
   SafeAreaView,
   FlatList,
-  RefreshControl,
-  Pressable,
   useColorScheme,
-  Image,
   StatusBar,
 } from "react-native";
-
 import { SvgUri } from "react-native-svg";
-
 import { systemWeights } from "react-native-typography";
 
-const queryClient = new QueryClient();
+import { type FoodItem, FoodItemComponent } from "./components/Food";
 
-type FoodItem = {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-  price_rupees: number;
-  is_vegetarian: boolean;
-};
+const queryClient = new QueryClient();
 
 type FoodItems = {
   data: FoodItem[];
@@ -84,34 +71,6 @@ function HomeComponent() {
         className="py-4"
       />
     </SafeAreaView>
-  );
-}
-
-function FoodItemComponent({ foodInfo }: { foodInfo: FoodItem }) {
-  const isDarkMode = useColorScheme() === "dark";
-
-  return (
-    <Pressable
-      android_ripple={{ color: isDarkMode ? "#555555" : "#bbbbbb" }}
-      className="my-4 flex flex-row justify-between items-center px-3 py-3 rounded-2xl bg-white dark:bg-neutral-900">
-      <View>
-        <Image
-          source={{ uri: foodInfo.image }}
-          style={{ height: 100, width: 100 }}
-          className="rounded-lg"
-        />
-      </View>
-      <View className="flex w-4/6">
-        <Text className="text-2xl font-medium text-neutral-900 dark:text-neutral-100">
-          {foodInfo.name}
-        </Text>
-        <Text className="text-neutral-600 dark:text-neutral-400">
-          {foodInfo.description.length > 150
-            ? foodInfo.description.substring(0, 150) + "..."
-            : foodInfo.description}
-        </Text>
-      </View>
-    </Pressable>
   );
 }
 
