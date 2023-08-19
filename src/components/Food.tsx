@@ -1,7 +1,7 @@
 import { Pressable, View, Image, Text, useColorScheme } from "react-native";
 import React from "react";
 
-export type FoodItem = {
+export type TFoodItem = {
   id: number;
   name: string;
   description: string;
@@ -10,13 +10,13 @@ export type FoodItem = {
   is_vegetarian: boolean;
 };
 
-export const FoodItemComponent = ({ foodInfo }: { foodInfo: FoodItem }) => {
+export const FoodItem = ({ foodInfo }: { foodInfo: TFoodItem }) => {
   const isDarkMode = useColorScheme() === "dark";
 
   return (
     <Pressable
-      android_ripple={{ color: isDarkMode ? "#555555" : "#bbbbbb" }}
-      className="my-4 flex flex-row justify-between items-center px-3 py-3 rounded-2xl bg-white dark:bg-neutral-900">
+      android_ripple={{ color: isDarkMode ? "#555555" : "#cccccc" }}
+      className="flex flex-row justify-between items-center px-3 py-3 rounded-2xl bg-white dark:bg-neutral-900">
       <View>
         <Image
           source={{ uri: foodInfo.image }}
@@ -36,4 +36,8 @@ export const FoodItemComponent = ({ foodInfo }: { foodInfo: FoodItem }) => {
       </View>
     </Pressable>
   );
+};
+
+FoodItem.Seperator = () => {
+  return <View className="h-6" />;
 };

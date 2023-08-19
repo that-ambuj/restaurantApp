@@ -1,7 +1,9 @@
 import {
   QueryClient,
   QueryClientProvider,
-  useQuery,
+  useInfiniteQuery,
+  Querycache,
+  QueryCache,
 } from "@tanstack/react-query";
 import React from "react";
 import {
@@ -11,16 +13,15 @@ import {
   FlatList,
   useColorScheme,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import { SvgUri } from "react-native-svg";
 import { systemWeights } from "react-native-typography";
 
-import { type FoodItem, FoodItemComponent } from "./components/Food";
-
-const queryClient = new QueryClient();
+import { type TFoodItem, FoodItem } from "./components/Food";
 
 type FoodItems = {
-  data: FoodItem[];
+  data: TFoodItem[];
   current_page: number;
   total_pages: 2;
 };
@@ -33,18 +34,42 @@ function App() {
   );
 }
 
+const queryCache = new QueryCache();
+const queryClient = new QueryClient({ queryCache });
+
 function HomeComponent() {
   const fetchFoodItems = async ({ pageParam = 1 }) => {
     const res = await fetch(
-      `https://restaurant-api.shuttleapp.rs/menu?page=${pageParam}`,
+      `https://restaurant-api.shuttleapp.rs/menu?limit=5&page=${pageParam}`,
     );
     return res.json();
   };
 
-  const { data, isLoading, refetch } = useQuery<FoodItems>({
+  const {
+    data,
+    isLoading,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery<FoodItems>({
     queryKey: ["foodItems"],
     queryFn: fetchFoodItems,
+    getNextPageParam: lastPage => {
+      if (lastPage.current_page < lastPage.total_pages) {
+        return lastPage.current_page + 1;
+      }
+
+      return null;
+    },
+    cacheTime: 1,
   });
+
+  const loadMore = () => {
+    if (hasNextPage) {
+      fetchNextPage();
+    }
+  };
 
   const isDarkMode = useColorScheme() === "dark";
 
@@ -62,14 +87,29 @@ function HomeComponent() {
           Food Menu
         </Text>
       </View>
-      <FlatList
-        data={data?.data}
-        renderItem={({ item }) => <FoodItemComponent foodInfo={item} />}
-        keyExtractor={item => item.id.toString()}
-        refreshing={isLoading}
-        onRefresh={refetch}
-        className="py-4"
-      />
+      {data && (
+        <FlatList
+          data={data.pages.map(d => d.data).flat()}
+          renderItem={({ item }) => <FoodItem foodInfo={item} />}
+          keyExtractor={item => item.id.toString()}
+          refreshing={isLoading}
+          onRefresh={refetch}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.7}
+          ItemSeparatorComponent={FoodItem.Seperator}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator
+                size="large"
+                color={isDarkMode ? "#dddddd" : "#333333"}
+              />
+            ) : (
+              <View className="h-12" />
+            )
+          }
+          className="py-6"
+        />
+      )}
     </SafeAreaView>
   );
 }
